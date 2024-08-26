@@ -2,7 +2,25 @@
 
 Flatpak Software Installer or originally called Flatpak Search and Install (FSI) is a simple/small script that allows you to search and install Flatpak applications easier.
 
-## Installations
+## Table of contents
+
+- [Flatpak Software Installer (FSI)](#flatpak-software-installer-fsi)
+  - [Table of contents](#table-of-contents)
+  - [Flags](#flags)
+  - [How to use](#how-to-use)
+    - [Cargo run](#cargo-run)
+    - [Cargo build](#cargo-build)
+    - [Script installation](#script-installation)
+  - [TODO](#todo)
+
+## Flags
+
+| Long       | Short | Description                                     |
+| ---------- | :---: | ----------------------------------------------- |
+| `--update` | `-u`  | Also update the current installed applications. |
+| `--help`   | `-h`  | Show the help message.                          |
+
+## How to use
 
 ### Cargo run
 
@@ -19,13 +37,13 @@ Difference between the two:
 ```bash
 git clone --depth 1 https://github.com/StandUp2001/fsi.git
 cd fsi
-cargo run --release -- <arg>
+cargo run --release -- <arg> [flags]
 ```
 
 ```bash
 git clone --depth 1 https://github.com/StandUp2001/fsi.git
 cd fsi
-cargo run -- <arg>
+cargo run -- <arg> [flags]
 ```
 
 ### Cargo build
@@ -52,18 +70,18 @@ cp target/debug/fsi /usr/local/bin/
 With cp we copy the compiled script to the /usr/local/bin/ directory and with that we can run the script from anywhere.
 
 ```bash
-fsi <arg>
+fsi <arg> [flags]
 ```
 
 Otherwise we can also run the script from the directory where the script is located.
 In the folder `fsi` we can run the script with the following command:
 
 ```bash
-./target/release/fsi <arg>
+./target/release/fsi <arg> [flags]
 ```
 
 ```bash
-./target/debug/fsi <arg>
+./target/debug/fsi <arg> [flags]
 ```
 
 ### Script installation

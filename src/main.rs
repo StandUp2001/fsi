@@ -1,21 +1,6 @@
 use std::{io::Write, usize};
 
-macro_rules! my_matches {
-    ($value:expr, $($arg:expr),*) => {
-        {
-            let lower = $value.to_lowercase();
-            let a = lower.as_str();
-            $(a == $arg.to_lowercase().as_str())||*
-        }
-    };
-}
-
-macro_rules! exit {
-    ($code:expr, $( $msg:expr ),*) => {{
-        println!($($msg),*);
-        std::process::exit($code);
-    }};
-}
+mod macros;
 
 trait Tab {
     fn tab(&self, index: usize) -> &str;
@@ -33,51 +18,62 @@ impl Tab for &str {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    for arg in args.iter() {
+        let arg = arg.as_str().to_lowercase();
+        if arg == "--help" || arg == "-h" {
+            println!("Usage: {} <program> [flags]", args[0]);
+            std::process::exit(0);
+        }
+    }
     if args.len() < 2 {
-        exit!(1, "Usage: {} <program>", args[0]);
+        println!("Usage: {} <program> [flags]", args[0]);
+        exit!(1, "No program specified");
     }
 
-    // TODO
-    // check_for_updates();
+    let output = command!("which", "flatpak");
+    if !output.status.success() {
+        exit!(1, "Flatpak is not installed");
+    }
 
-    let output = search_program(&args[1]);
+    if args.len() == 3 && (args[2].to_lowercase() == "--update" || args[2].to_lowercase() == "-u") {
+        check_for_updates();
+    }
+
+    println!("Searching for program -> {}", args[1]);
+    let output = command!("flatpak", "search", &args[1]);
     let loos = String::from_utf8_lossy(&output.stdout);
     let lines: Vec<&str> = loos.lines().collect();
-    show_list(&lines);
+
+    for (index, line) in lines.iter().enumerate() {
+        println!("{:3} {:20} {}", index + 1, line.tab(0), line.tab(2));
+    }
+
     let input = read_input(lines.len());
     let program = lines[input - 1];
+
     println!("Installing: {}", program.tab(0));
     println!("{}\n", program);
     install_program(program);
 }
 
-#[allow(dead_code, unreachable_code)]
 fn check_for_updates() {
-    todo!("Not implemented yet");
     println!("Checking for updates...");
-    // Show the list of updates
-    let output = std::process::Command::new("flatpak")
-        .arg("update")
-        .output()
-        .expect("Failed to execute command");
+    let output = command!("flatpak", "update");
     let loos = String::from_utf8_lossy(&output.stdout);
     let lines: Vec<&str> = loos.lines().collect();
-    // if no updates available, return
+
     if lines.last().unwrap() == &"Nothing to do." {
         println!("No updates available");
         return;
     }
+
     if lines.len() > 1 {
         println!("Updates available:");
         for line in lines.iter().skip(1) {
             println!("{}", line);
         }
         println!("Updating...");
-        std::process::Command::new("flatpak")
-            .arg("update")
-            .arg("-y")
-            .output()
-            .expect("Failed to execute command");
+        command!("flatpak", "update", "-y");
     }
 
     println!("Updates checked successfully");
@@ -87,28 +83,8 @@ fn install_program(program: &str) {
     let app_id = program.tab(0);
     let app_name = program.tab(2);
     println!("Installing {}...", app_name);
-    std::process::Command::new("flatpak")
-        .arg("install")
-        .arg("-y")
-        .arg(app_id)
-        .output()
-        .expect("Failed to execute command");
-    println!();
-    println!("{} installed successfully", app_name);
-}
-
-fn show_list(lines: &Vec<&str>) {
-    for (index, line) in lines.iter().enumerate() {
-        println!("{:3} {:20} {}", index + 1, line.tab(0), line.tab(2));
-    }
-}
-
-fn search_program(program: &str) -> std::process::Output {
-    std::process::Command::new("flatpak")
-        .arg("search")
-        .arg(program)
-        .output()
-        .expect("Failed to execute command")
+    command!("flatpak", "install", "-y", app_id);
+    println!("\n{} installed successfully", app_name);
 }
 
 fn read_input(max: usize) -> usize {
@@ -118,7 +94,7 @@ fn read_input(max: usize) -> usize {
 
     if max == 1 {
         let input = ask_to_user("Do you want to install this program? (y/n): ");
-        if my_matches!(input.trim(), "y", "yes", "") {
+        if my_matches!(input, "y", "yes", "") {
             return 1;
         }
         exit!(0, "Goodbye!");
@@ -127,17 +103,16 @@ fn read_input(max: usize) -> usize {
     loop {
         // print and prompt on the same line
         let input = ask_to_user("Enter the index of the program to install (q to quit): ");
-        let trimmed = input.trim();
-        if my_matches!(trimmed, "q", "quit") {
+        if my_matches!(input, "q", "quit", "esc") {
             exit!(0, "Goodbye!");
         }
         // check if the input is a number
-        if !trimmed.chars().all(char::is_numeric) {
+        if !input.chars().all(char::is_numeric) {
             println!("Invalid input. Please try again.");
             continue;
         }
 
-        let index: usize = trimmed.parse().expect("Invalid input");
+        let index: usize = input.parse().expect("Invalid input");
         if 1 <= index && index <= max {
             return index;
         }
@@ -153,5 +128,5 @@ fn ask_to_user(msg: &str) -> String {
         .read_line(&mut input)
         .expect("Failed to read line");
     println!();
-    input
+    input.trim().to_string()
 }
