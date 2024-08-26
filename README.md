@@ -28,15 +28,17 @@ Run this in terminal (if you have python installed):
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/StandUp2001/fsi/main/install | python
-
-fsi <arg> [flags]
 ```
 
 or
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/StandUp2001/fsi/main/install | python
+```
 
+Then you can run the script with:
+
+```bash
 fsi <arg> [flags]
 ```
 
