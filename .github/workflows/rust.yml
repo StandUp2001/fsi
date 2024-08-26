@@ -1,40 +1,79 @@
-name: Rust CI
+name: Build and Release
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build:
+  create_release:
     runs-on: ubuntu-latest
+    outputs:
+      release_url: ${{ steps.create_task_release.outputs.upload_url }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get version from Cargo.toml
+        id: get_version
+        run: |
+          VERSION=$(grep '^version' Cargo.toml | cut -d '"' -f2)
+          echo "::set-output name=version::$VERSION"
+
+      - name: create release
+        id: create_task_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: release v${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+
+  build:
+    needs: create_release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: fsi_linux_x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: fsi_mac_arm64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: fsi_mac_x64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: fsi_windows_x64
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      - name: Set up Rust
+      - name: install rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          override: true
+          target: ${{ matrix.target }}
 
-      - name: Build and create release
-        run: |
-          cargo build --release
-          echo "Creating GitHub Release..."
-          git tag $GITHUB_REF
-          git push origin $GITHUB_REF
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to push tags and create releases
+      - name: build
+        run: cargo build --release --target=${{ matrix.target }}
 
-      - name: Create GitHub release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: upload artifact
+        uses: actions/upload-artifact@v2
         with:
-          files: target/release/fsi # Replace with your binary name
+          name: ${{ matrix.artifact_name }}
+          path: target/${{ matrix.target }}/release/fsi
+
+      - name: upload release assets
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to create releases
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.release_url }}
+          asset_path: target/${{ matrix.target }}/release/fsi
+          asset_name: ${{ matrix.artifact_name }}
+          asset_content_type: application/octet-stream
