@@ -72,6 +72,7 @@ def main():
     install_mod = os.path.join(bin_dir, "fsi")
 
     os.makedirs(bin_dir, exist_ok=True)
+    print("Downloading fsi...")
     try:
         with urllib.request.urlopen(f"{REPO_URL}_{get_exe_name()}") as response:
             data = response.read()
@@ -84,6 +85,7 @@ def main():
     except Exception as e:  # noqa: BLE001
         die(f"An error occurred: {e}")
 
+    print("Download complete")
     os.chmod(install_mod, 755)
 
     if path := os.getenv("PATH"):
@@ -92,7 +94,7 @@ def main():
             return
 
         print(f"This system doesn't have {bin_dir} in its PATH.")
-        print("  We try to add it for you.")
+        print("Add it to your shell configuration file to use fsi.")
 
         if shell := os.getenv("SHELL"):
             print("Execute this command to add fsi to your path")
