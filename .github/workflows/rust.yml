@@ -22,6 +22,9 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Create target directory
+        run: mkdir -p target
+
       - name: Cache Cargo registry
         uses: actions/cache@v3
         with:
