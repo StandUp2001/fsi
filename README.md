@@ -8,9 +8,9 @@ Flatpak Software Installer or originally called Flatpak Search and Install (FSI)
   - [Table of contents](#table-of-contents)
   - [Flags](#flags)
   - [How to use](#how-to-use)
+    - [Script installation](#script-installation)
     - [Cargo run](#cargo-run)
     - [Cargo build](#cargo-build)
-    - [Script installation](#script-installation)
   - [TODO](#todo)
 
 ## Flags
@@ -21,6 +21,24 @@ Flatpak Software Installer or originally called Flatpak Search and Install (FSI)
 | `--help`   | `-h`  | Show the help message.                          |
 
 ## How to use
+
+### Script installation
+
+Run this in terminal (if you have python installed):
+
+```bash
+wget -qO- https://raw.githubusercontent.com/StandUp2001/fsi/main/install | python
+
+fsi <arg> [flags]
+```
+
+or
+
+```bash
+curl -sSL https://raw.githubusercontent.com/StandUp2001/fsi/main/install | python
+
+fsi <arg> [flags]
+```
 
 ### Cargo run
 
@@ -84,12 +102,8 @@ In the folder `fsi` we can run the script with the following command:
 ./target/debug/fsi <arg> [flags]
 ```
 
-### Script installation
-
-TODO!
-
 ## TODO
 
-- [ ] Check if flatpak is installed.
-- [ ] Add a way to install the application by: github or script.
-- [ ] Check for updates: Check if --update has been passed.
+- [x] Check if flatpak is installed.
+- [x] Add a way to install the application by: github or script.
+- [x] Check for updates: Check if --update has been passed.
