@@ -16,17 +16,53 @@ impl Tab for &str {
     }
 }
 
+fn table_line(table: &str) {
+    let table_length = table.len() - 1;
+    let number_enter = table.chars().filter(|&c| c == '\n').count() + 1;
+    println!("{}", "-".repeat(table_length / number_enter));
+}
+
+fn show_help(program: &str) {
+    println!("Usage: {} <program> [flags]\n", program);
+    let table = include_str!("../README.md")
+        .split("## Flags")
+        .nth(1)
+        .unwrap()
+        .split("##")
+        .next()
+        .unwrap()
+        .trim();
+
+    println!("Flags:");
+    table_line(table);
+    println!("{}", table);
+    table_line(table);
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     for arg in args.iter() {
         let arg = arg.as_str().to_lowercase();
         if arg == "--help" || arg == "-h" {
-            println!("Usage: {} <program> [flags]", args[0]);
+            show_help(args[0].as_str());
             std::process::exit(0);
+        }
+        if arg == "--version" || arg == "-v" {
+            let cargo_toml = include_str!("../Cargo.toml");
+            let version = cargo_toml
+                .lines()
+                .find(|line| line.starts_with("version"))
+                .unwrap()
+                .split('=')
+                .last()
+                .unwrap()
+                .trim()
+                .trim_matches('"');
+            exit!(0, "fsi v{}", version);
         }
     }
     if args.len() < 2 {
-        println!("Usage: {} <program> [flags]", args[0]);
+        show_help(args[0].as_str());
         exit!(1, "No program specified");
     }
 

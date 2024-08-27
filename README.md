@@ -15,10 +15,11 @@ Flatpak Software Installer or originally called Flatpak Search and Install (FSI)
 
 ## Flags
 
-| Long       | Short | Description                                     |
-| ---------- | :---: | ----------------------------------------------- |
-| `--update` | `-u`  | Also update the current installed applications. |
-| `--help`   | `-h`  | Show the help message.                          |
+| Long        | Short | Description                                     |
+| ----------- | :---: | ----------------------------------------------- |
+| `--update`  | `-u`  | Also update the current installed applications. |
+| `--help`    | `-h`  | Show the help message.                          |
+| `--version` | `-v`  | Show the version of the script.                 |
 
 ## How to use
 
