@@ -80,8 +80,8 @@ fn check_for_updates() {
 }
 
 fn install_program(program: &str) {
-    let app_id = program.tab(0);
-    let app_name = program.tab(2);
+    let app_name = program.tab(0);
+    let app_id = program.tab(2);
     println!("Installing {}...", app_name);
     command!("flatpak", "install", "-y", app_id);
     println!("\n{} installed successfully", app_name);
@@ -93,7 +93,7 @@ fn read_input(max: usize) -> usize {
     }
 
     if max == 1 {
-        let input = ask_to_user("Do you want to install this program? (y/n): ");
+        let input = ask_to_user("Do you want to install this program? (Y/n): ");
         if my_matches!(input, "y", "yes", "") {
             return 1;
         }
